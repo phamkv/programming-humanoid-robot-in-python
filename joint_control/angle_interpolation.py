@@ -21,8 +21,8 @@
 
 
 from pid import PIDAgent
-from keyframes import hello
-
+from keyframes import leftBellyToStand
+from scipy.interpolate import CubicSpline
 
 class AngleInterpolationAgent(PIDAgent):
     def __init__(self, simspark_ip='localhost',
@@ -42,10 +42,24 @@ class AngleInterpolationAgent(PIDAgent):
     def angle_interpolation(self, keyframes, perception):
         target_joints = {}
         # YOUR CODE HERE
+        for i, joint_name in enumerate(keyframes[0]):
+            times = keyframes[1][i]
+            angles = [keyframe[0] for keyframe in keyframes[2][i]] # Only take the first element of keys (skip bezier)
 
+            spline = CubicSpline(times, angles) # needs scipy
+
+            current_time = perception.time
+            if current_time < times[0]:
+                current_angle = angles[0]
+            elif current_time > times[-1]:
+                current_angle = angles[-1]
+            else:
+                current_angle = spline(current_time)
+
+            target_joints[joint_name] = current_angle
         return target_joints
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = hello()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = leftBellyToStand()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()
