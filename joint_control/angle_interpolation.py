@@ -21,8 +21,7 @@
 
 
 from pid import PIDAgent
-from keyframes import leftBellyToStand
-from scipy.interpolate import CubicSpline
+from keyframes import rightBackToStand
 
 class AngleInterpolationAgent(PIDAgent):
     def __init__(self, simspark_ip='localhost',
@@ -32,34 +31,44 @@ class AngleInterpolationAgent(PIDAgent):
                  sync_mode=True):
         super(AngleInterpolationAgent, self).__init__(simspark_ip, simspark_port, teamname, player_id, sync_mode)
         self.keyframes = ([], [], [])
+        self.start_time = self.perception.time
 
     def think(self, perception):
         target_joints = self.angle_interpolation(self.keyframes, perception)
-        target_joints['RHipYawPitch'] = target_joints['LHipYawPitch'] # copy missing joint in keyframes
+        # target_joints['RHipYawPitch'] = target_joints['LHipYawPitch'] # copy missing joint in keyframes
         self.target_joints.update(target_joints)
         return super(AngleInterpolationAgent, self).think(perception)
 
     def angle_interpolation(self, keyframes, perception):
         target_joints = {}
         # YOUR CODE HERE
-        for i, joint_name in enumerate(keyframes[0]):
-            times = keyframes[1][i]
-            angles = [keyframe[0] for keyframe in keyframes[2][i]] # Only take the first element of keys (skip bezier)
+        current_time = perception.time - self.start_time
+        names, times, keys = keyframes
+        
+        for joint_index, name in enumerate(names):
+            for time_point in range(len(times[joint_index]) - 1):
+                if (times[joint_index][time_point] <= current_time <= times[joint_index][len(times[joint_index]) - 1]):
+                    first_point = keys[joint_index][time_point][0]
+                    second_point = keys[joint_index][time_point + 1][0]
 
-            spline = CubicSpline(times, angles) # needs scipy
+                    control_point_following_offset = keys[joint_index][time_point][2][2]
+                    control_point_preceding_offset = keys[joint_index][time_point][1][2]
+                    dtime_following = keys[joint_index][time_point][2][1]
+                    dtime_preceding = keys[joint_index][time_point][1][1]
 
-            current_time = perception.time
-            if current_time < times[0]:
-                current_angle = angles[0]
-            elif current_time > times[-1]:
-                current_angle = angles[-1]
-            else:
-                current_angle = spline(current_time)
+                    control_point_following = first_point + control_point_following_offset * dtime_following
+                    control_point_preceding = second_point + control_point_preceding_offset * dtime_preceding
 
-            target_joints[joint_name] = current_angle
+                    t = (current_time - times[joint_index][time_point]) / (times[joint_index][time_point + 1] - times[joint_index][time_point])
+
+                    target_joints[name] = (1-t)**3 * first_point + 3 * t * (1-t)**2 * control_point_following + 3 * t**2 * (1-t) * control_point_preceding + t**3 * second_point
+
+        if 'LHipYawPitch' in target_joints:
+            target_joints['RHipYawPitch'] = target_joints['LHipYawPitch']
+
         return target_joints
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = leftBellyToStand()  # CHANGE DIFFERENT KEYFRAMES
+    agent.keyframes = rightBackToStand()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()
