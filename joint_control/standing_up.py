@@ -17,15 +17,18 @@ class StandingUpAgent(PostureRecognitionAgent):
     def standing_up(self):
         posture = self.posture
         # YOUR CODE HERE
-        right_back = {"Back", "Headback", "Sit", "Right"}
-        right_belly = {"Crouch", "Belly", "Frog"}
-        
-        if posture in right_back:
-            self.keyframe = keyframes.rightBackToStand()
-        elif posture in right_belly:
-            self.keyframe = keyframes.rightBellyToStand()
-        else:
-            self.keyframe = keyframes.leftBackToStand()
+        if posture in {"Belly", "Back", "Left", "Right"} and not self.working:
+            self.start_time = -1
+
+        if self.start_time == -1:
+            if posture == "Left":
+                self.keyframes = keyframes.leftBackToStand()
+            elif posture == "Right":
+                self.keyframes = keyframes.rightBackToStand()
+            elif posture == "Belly":
+                self.keyframes = keyframes.leftBellyToStand()
+            elif posture == "Back":
+                self.keyframes = keyframes.rightBackToStand()
 
 
 class TestStandingUpAgent(StandingUpAgent):
@@ -38,8 +41,8 @@ class TestStandingUpAgent(StandingUpAgent):
                  sync_mode=True):
         super(TestStandingUpAgent, self).__init__(simspark_ip, simspark_port, teamname, player_id, sync_mode)
         self.stiffness_on_off_time = 0
-        self.stiffness_on_cycle = 10  # in seconds
-        self.stiffness_off_cycle = 3  # in seconds
+        self.stiffness_on_cycle = 30  # in seconds
+        self.stiffness_off_cycle = 1  # in seconds, change value to 1 = belly, 2 = back
 
     def think(self, perception):
         action = super(TestStandingUpAgent, self).think(perception)

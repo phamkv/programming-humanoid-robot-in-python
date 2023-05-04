@@ -21,7 +21,7 @@
 
 
 from pid import PIDAgent
-from keyframes import rightBackToStand
+from keyframes import rightBackToStand, leftBellyToStand, rightBellyToStand
 
 class AngleInterpolationAgent(PIDAgent):
     def __init__(self, simspark_ip='localhost',
@@ -31,7 +31,8 @@ class AngleInterpolationAgent(PIDAgent):
                  sync_mode=True):
         super(AngleInterpolationAgent, self).__init__(simspark_ip, simspark_port, teamname, player_id, sync_mode)
         self.keyframes = ([], [], [])
-        self.start_time = self.perception.time
+        self.start_time = -1
+        self.working = False
 
     def think(self, perception):
         target_joints = self.angle_interpolation(self.keyframes, perception)
@@ -42,12 +43,25 @@ class AngleInterpolationAgent(PIDAgent):
     def angle_interpolation(self, keyframes, perception):
         target_joints = {}
         # YOUR CODE HERE
+        if keyframes == ([], [], []):
+            return target_joints
+        
+        if self.start_time < 0:
+            self.start_time = perception.time
+            self.working = True
+
         current_time = perception.time - self.start_time
         names, times, keys = keyframes
         
         for joint_index, name in enumerate(names):
             for time_point in range(len(times[joint_index]) - 1):
-                if (times[joint_index][time_point] <= current_time <= times[joint_index][len(times[joint_index]) - 1]):
+                # if we are at the end, just return the end
+                if current_time > times[joint_index][-1]:
+                    self.start_time = -1
+                    self.keyframes = ([], [], [])
+                    self.working = False
+
+                if (times[joint_index][time_point] <= current_time <= times[joint_index][-1]):
                     first_point = keys[joint_index][time_point][0]
                     second_point = keys[joint_index][time_point + 1][0]
 
@@ -70,5 +84,6 @@ class AngleInterpolationAgent(PIDAgent):
 
 if __name__ == '__main__':
     agent = AngleInterpolationAgent()
-    agent.keyframes = rightBackToStand()  # CHANGE DIFFERENT KEYFRAMES
+    print(agent.keyframes)
+    agent.keyframes = rightBellyToStand()  # CHANGE DIFFERENT KEYFRAMES
     agent.run()
