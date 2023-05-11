@@ -46,19 +46,19 @@ class ForwardKinematicsAgent(PostureRecognitionAgent):
             'RArm': ['RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll']
         }
         
-        self.joint_length = {
-            'HeadYaw': [0.00, 0.00, 126.50], 'HeadPitch': [0.00, 0.00, 0.00],
-            'LShoulderPitch': [0.00, 98.00, 100.00], 'LShoulderRoll': [0.00, 0.00, 0.00],
-            'LElbowYaw': [105.00, 15.00, 0.00], 'LElbowRoll': [0.00, 0.00, 0.00],
-            'RShoulderPitch': [0.00, -98.00, 100.00], 'RShoulderRoll': [0.00, 0.00, 0.00],
-            'RElbowYaw': [105.00, -15.00, 0.00], 'RElbowRoll': [0.00, 0.00, 0.00],
-            'LHipYawPitch': [0.00, 50.00, -85.00], 'LHipRoll': [0.00, 0.00, 0.00],
-            'LHipPitch': [0.00, 0.00, 0.00], 'LKneePitch': [0.00, 0.00, -100.00],
-            'LAnklePitch': [0.00, 0.00, -102.90], 'LAnkleRoll': [0.00, 0.00, 0.00],
-            'RHipYawPitch': [0.00, -50.00, -85.00], 'RHipRoll': [0.00, 0.00, 0.00],
-            'RHipPitch': [0.00, 0.00, 0.00],
-            'RKneePitch': [0.00, 0.00, -100.00], 'RAnklePitch': [0.00, 0.00, -102.90],
-            'RAnkleRoll': [0.00, 0.00, 0.00]
+        self.joint_length = { # (x, y, z) in meters
+            'HeadYaw': (0.00, 0.00, .1265), 'HeadPitch': (0.00, 0.00, 0.00),
+            'LShoulderPitch': (0.00, .98, .100), 'LShoulderRoll': (0.00, 0.00, 0.00),
+            'LElbowYaw': (.105, .015, 0.00), 'LElbowRoll': (0.00, 0.00, 0.00),
+            'RShoulderPitch': (0.00, -.098, .100), 'RShoulderRoll': (0.00, 0.00, 0.00),
+            'RElbowYaw': (.105, -.015, 0.00), 'RElbowRoll': (0.00, 0.00, 0.00),
+            'LHipYawPitch': (0.00, .050, -.085), 'RHipYawPitch': (0.00, -.050, -.085),
+            'LHipRoll': (0.00, 0.00, 0.00), 'LHipPitch': (0.00, 0.00, 0.00), 'LKneePitch': (0.00, 0.00, -.100),
+            'LAnklePitch': (0.00, 0.00, -.1029), 'LAnkleRoll': (0.00, 0.00, 0.00),
+            'RHipRoll': (0.00, 0.00, 0.00), 'RHipPitch': (0.00, 0.00, 0.00), 'RKneePitch': (0.00, 0.00, -.100),
+            'RAnklePitch': (0.00, 0.00, -.1029), 'RAnkleRoll': (0.00, 0.00, 0.00),
+            'LHand': (.05775, 0.00, .01231), 'RHand': (.05775, 0.00, .01231),
+            'LWristYaw': (.05595, 0.00, 0.00), 'RWristYaw': (.05595, 0.00, 0.00)
         }
 
     def think(self, perception):
