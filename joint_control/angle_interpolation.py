@@ -57,7 +57,7 @@ class AngleInterpolationAgent(PIDAgent):
             for time_point in range(len(times[joint_index]) - 1):
                 # if we are at the end, just return the end
                 if current_time > times[joint_index][-1]:
-                    self.start_time = -1
+                    self.start_time = 0
                     self.keyframes = ([], [], [])
                     self.working = False
 
